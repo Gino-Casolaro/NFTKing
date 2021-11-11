@@ -63,7 +63,8 @@ public class RepositoryController {
     @PostMapping("/portfolios")
     public ResponseEntity<Portfolio> createPortfolio(@RequestBody Portfolio portfolio) {
         try {
-            Portfolio _portfolio = portfolioRepository.save(new Portfolio(portfolio.getTitle(), portfolio.getDescription(), false));)
+            Portfolio _portfolio = portfolioRepository
+                    .save(new Portfolio(portfolio.getTitle(), portfolio.getDescription(), false));
             return new ResponseEntity<>(_portfolio, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -73,8 +74,17 @@ public class RepositoryController {
     @PutMapping("/portfolios/{id}")
     public ResponseEntity<Portfolio> updatePortfolio(@PathVariable("id") String id,
             @RequestBody Portfolio portfolio) {
+        Optional<Portfolio> portfolioData = portfolioRepository.findById(id);
 
-        return null;
+        if (portfolioData.isPresent()) {
+            Portfolio _portfolio = portfolioData.get();
+            _portfolio.setTitle(portfolio.getTitle());
+            _portfolio.setDescription(portfolio.getDescription());
+            _portfolio.setActive(portfolio.isActive());
+            return new ResponseEntity<>(portfolioRepository.save(_portfolio), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("/portfolios/{id}")
@@ -97,7 +107,7 @@ public class RepositoryController {
         }
     }
 
-    @GetMapping("/portfolio/active")
+    @GetMapping("/portfolios/active")
     public ResponseEntity<List<Portfolio>> findByActive() {
         try {
             List<Portfolio> portfolios = portfolioRepository.findByActive(true);
